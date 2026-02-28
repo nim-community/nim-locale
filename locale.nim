@@ -40,19 +40,9 @@ when defined(windows):
     var localeNameSize = GetLocaleInfoA(locale, LOCALE_SISO639LANGNAME, localeName, 256)
     return $localeName
         
-else:
-    import parseutils
-    #TODO for *nix. MUST be named GetLocale and return name of the language.
-    #proc getenv*(name: cstring): cstring {.header: "stdlib.h", importc: "getenv".}
-    proc GetLocaleFromEnv(): string =
-        var LANG = os.getenv("LANG")
-        if LANG == "":
-            # Language not set.
-            return "Unknown"
-        else:
-            discard parseutils.parseUntil(LANG, result, '_')
- 
-when defined(macosx):
+
+elif defined(macosx):
+  import parseutils
   {.passL: "-framework CoreFoundation".}
   
   type
@@ -91,7 +81,30 @@ when defined(macosx):
       CFRelease(languages)
     else:
       result = "Unknown"
- 
+else:
+  import parseutils
+  
+  const
+    LC_CTYPE = 0
+    LC_ALL = 6
+  
+  proc setlocale(category: cint, locale: cstring): cstring {.header: "<locale.h>", importc.}
+  
+  proc GetUnixLocaleName(): string =
+    var locale = setlocale(LC_CTYPE, nil)
+    if locale != nil and locale[0] != '\0':
+      result = $locale
+      # Extract language code from locale string (e.g., "en_US.UTF-8" -> "en")
+      var langCode: string
+      discard parseutils.parseUntil(result, langCode, '_')
+      if langCode.len() > 0:
+        result = langCode
+      # Handle "C" or "POSIX" locales
+      elif result == "C" or result == "POSIX":
+        result = "Unknown"
+    else:
+      result = "Unknown"
+
 type
   TLocaleManager* = object #An object used for localization via xml/cfg.
       table: Table[string, Table[string,string]]
@@ -104,8 +117,7 @@ proc GetLocaleName*(): string =
   elif defined(macosx):
       return GetMacLocaleName()
   else:
-      #TODO for *nix
-      return GetLocaleFromEnv()
+      return GetUnixLocaleName()
 
 proc loadXmlLocaleData*(locale: var TLocaleManager, filename: string) =
   ## Initializes a TLocaleManager by loading it with localized strings from a XML file.
