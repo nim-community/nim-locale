@@ -54,7 +54,7 @@ else:
  
 type
   TLocaleManager* = object #An object used for localization via xml/cfg.
-      table: TTable[string, TTable[string,string]]
+      table: Table[string, Table[string,string]]
       sectionLang: string
             
 proc GetLocaleName*(): string =
@@ -68,12 +68,12 @@ proc GetLocaleName*(): string =
 proc loadXmlLocaleData*(locale: var TLocaleManager, filename: string) =
   ## Initializes a TLocaleManager by loading it with localized strings from a XML file.
   
-  locale.table = initTable[string, TTable[string, string]]()
+  locale.table = initTable[string, Table[string, string]]()
   var localeNode = loadXml(filename)
   for n in localeNode.items:
     if n.tag == "string":
       var key = n.attr("key")
-      var innertable: TTable[string, string] = initTable[string, string]()
+      var innertable: Table[string, string] = initTable[string, string]()
       for trans in n.items:
         if trans.tag == "trans":
           var lang = trans.attr("lang")
@@ -84,15 +84,15 @@ proc loadXmlLocaleData*(locale: var TLocaleManager, filename: string) =
 
 proc loadCfgLocaleData*(locale: var TLocaleManager, filename: string) =
   ## Initializes a TLocaleManager by loading it with localized strings from a CFG file.
-  locale.table = initTable[string, TTable[string, string]]()
+  locale.table = initTable[string, Table[string, string]]()
   
   var f = newFileStream(filename, fmRead)
   if f != nil:
-    var p: TCfgParser
+    var p: CfgParser
     open(p, f, filename)
 
     var key: string
-    var innertable: TTable[string, string] = initTable[string, string]()
+    var innertable: Table[string, string] = initTable[string, string]()
     while true:
       var e = next(p)
 
@@ -108,7 +108,7 @@ proc loadCfgLocaleData*(locale: var TLocaleManager, filename: string) =
         key = e.section
         innertable = initTable[string, string]()
       of cfgKeyValuePair:
-        if key == nil and e.key == "SectionLang":
+        if key.len() == 0 and e.key == "SectionLang":
           locale.sectionLang = e.value
           #echo("Section Language: " & e.value)
         else:
@@ -124,7 +124,7 @@ proc loadCfgLocaleData*(locale: var TLocaleManager, filename: string) =
         
     close(p)
   else:
-    raise newException(EInvalidKey, "Invalid .cfg")
+    raise newException(IOError, "Invalid .cfg")
 
 
     
@@ -134,7 +134,7 @@ proc getKeyLang*(locale: var TLocaleManager, key: string, lang: string): string 
   if lang == locale.sectionLang:
     return key
   
-  return locale.table.mget(key)[lang]
+  return locale.table[key][lang]
     
 proc getKey*(locale: var TLocaleManager, key: string): string =
   ## Gets the localized string for the user's locale.
