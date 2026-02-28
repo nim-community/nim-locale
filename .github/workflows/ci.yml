@@ -33,19 +33,5 @@ jobs:
     - name: Install dependencies
       run: nimble install -y
 
-    - name: Debug locale environment
-      if: runner.os != 'Windows'
-      run: |
-        echo "=== Locale Environment ==="
-        echo "LANG: $LANG"
-        echo "LC_ALL: $LC_ALL"
-        echo "LC_CTYPE: $LC_CTYPE"
-        echo ""
-        echo "=== Available Locales ==="
-        locale -a | head -20 || echo "locale command not available"
-        echo ""
-        echo "=== Current Locale Settings ==="
-        locale || echo "locale command not available"
-
     - name: Build project
       run: nimble test
