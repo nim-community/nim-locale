@@ -130,9 +130,9 @@ proc loadXmlLocaleData*(locale: var TLocaleManager, filename: string) =
         if trans.tag == "trans":
           var lang = trans.attr("lang")
           var value = trans.attr("value") #using an attribute because PXmlNode.Text is broken.
-          innertable.add(lang, value)
+          innertable[lang] = value
           
-      locale.table.add(key, innertable)
+      locale.table[key] = innertable
 
 proc loadCfgLocaleData*(locale: var TLocaleManager, filename: string) =
   ## Initializes a TLocaleManager by loading it with localized strings from a CFG file.
@@ -155,7 +155,7 @@ proc loadCfgLocaleData*(locale: var TLocaleManager, filename: string) =
       of cfgSectionStart:   ## a ``[section]`` has been parsed
         #echo("new section: " & e.section)
         if innertable.len() > 0:
-            locale.table.add(key, innertable)
+            locale.table[key] = innertable
 
         key = e.section
         innertable = initTable[string, string]()
@@ -165,14 +165,14 @@ proc loadCfgLocaleData*(locale: var TLocaleManager, filename: string) =
           #echo("Section Language: " & e.value)
         else:
           #echo("key-value-pair: " & e.key & ": " & e.value)
-          innertable.add(e.key, e.value)
+          innertable[e.key] = e.value
       of cfgError:
         echo(e.msg)
       else:
         continue
 
     if not locale.table.hasKey(key):
-        locale.table.add(key, innertable)
+        locale.table[key] = innertable
         
     close(p)
   else:
