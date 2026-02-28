@@ -33,5 +33,13 @@ jobs:
     - name: Install dependencies
       run: nimble install -y
 
+    - name: Set locale (Unix)
+      if: runner.os != 'Windows'
+      run: |
+        export LANG=en_US.UTF-8
+        export LC_ALL=en_US.UTF-8
+        echo "LANG=$LANG" >> $GITHUB_ENV
+        echo "LC_ALL=$LC_ALL" >> $GITHUB_ENV
+
     - name: Build project
       run: nimble test
