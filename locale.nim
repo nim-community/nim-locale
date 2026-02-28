@@ -52,6 +52,46 @@ else:
         else:
             discard parseutils.parseUntil(LANG, result, '_')
  
+when defined(macosx):
+  {.passL: "-framework CoreFoundation".}
+  
+  type
+    CFArrayRef = pointer
+    CFStringRef = pointer
+    CFIndex = int
+  
+  proc CFLocaleCopyPreferredLanguages(): CFArrayRef {.header: "<CoreFoundation/CFLocale.h>", importc.}
+  proc CFArrayGetCount(theArray: CFArrayRef): CFIndex {.header: "<CoreFoundation/CFArray.h>", importc.}
+  proc CFArrayGetValueAtIndex(theArray: CFArrayRef, idx: CFIndex): CFStringRef {.header: "<CoreFoundation/CFArray.h>", importc.}
+  proc CFStringGetCString(theString: CFStringRef, buffer: cstring, bufferSize: CFIndex, encoding: int32): bool {.header: "<CoreFoundation/CFString.h>", importc.}
+  proc CFRelease(cf: CFArrayRef) {.header: "<CoreFoundation/CFBase.h>", importc.}
+  
+  const kCFStringEncodingUTF8 = 0x08000100
+
+  proc GetMacLocaleName(): string =
+    var languages = CFLocaleCopyPreferredLanguages()
+    if languages != nil:
+      var count = CFArrayGetCount(languages)
+      if count > 0:
+        var langRef = CFArrayGetValueAtIndex(languages, 0)
+        var langStr = cast[CFStringRef](langRef)
+        var buffer: array[0..255, char]
+        var success = CFStringGetCString(langStr, cast[cstring](buffer[0].addr), 256, kCFStringEncodingUTF8)
+        if success:
+          result = $(cast[cstring](buffer[0].addr))
+          # Extract just the language code (e.g., "en" from "en-US")
+          var langCode: string
+          discard parseutils.parseUntil(result, langCode, '-')
+          if langCode.len() > 0:
+            result = langCode
+        else:
+          result = "Unknown"
+      else:
+        result = "Unknown"
+      CFRelease(languages)
+    else:
+      result = "Unknown"
+ 
 type
   TLocaleManager* = object #An object used for localization via xml/cfg.
       table: Table[string, Table[string,string]]
@@ -61,6 +101,8 @@ proc GetLocaleName*(): string =
   ## Retrieves the user's locale/language as an ISO 639-1 code string.
   when defined(windows):
       return GetWinLocaleName()
+  elif defined(macosx):
+      return GetMacLocaleName()
   else:
       #TODO for *nix
       return GetLocaleFromEnv()
