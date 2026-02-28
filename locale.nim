@@ -94,19 +94,16 @@ else:
     var locale = setlocale(LC_CTYPE, nil)
     if locale != nil and locale[0] != '\0':
       result = $locale
-      # Handle "C" or "POSIX" locales first
-      if result == "C" or result == "POSIX":
-        result = "en"  # Default to English for C/POSIX locales
-      else:
-        # Extract language code from locale string (e.g., "en_US.UTF-8" -> "en")
-        var langCode: string
-        discard parseutils.parseUntil(result, langCode, '_')
-        if langCode.len() > 0:
-          result = langCode
-        else:
-          result = "en"  # Default to English
+      # Extract language code from locale string (e.g., "en_US.UTF-8" -> "en")
+      var langCode: string
+      discard parseutils.parseUntil(result, langCode, '_')
+      if langCode.len() > 0:
+        result = langCode
+      # Handle "C" or "POSIX" locales
+      elif result == "C" or result == "POSIX":
+        result = "Unknown"
     else:
-      result = "en"  # Default to English
+      result = "Unknown"
 
 type
   TLocaleManager* = object #An object used for localization via xml/cfg.

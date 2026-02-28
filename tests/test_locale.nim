@@ -8,12 +8,13 @@ suite "Locale Tests":
     check localeName.len > 0
     check localeName != "Unknown" or true  # May be Unknown in some environments
     
-  test "GetLocaleName returns ISO 639-1 code format":
+  test "GetLocaleName returns ISO 639-1 code format or Unknown":
     let localeName = GetLocaleName()
-    # ISO 639-1 codes are typically 2 letters
-    check localeName.len == 2 or localeName.len == 3
-    # Should be lowercase
-    check localeName.toLowerAscii() == localeName
+    if localeName != "Unknown":
+      # ISO 639-1 codes are typically 2 letters
+      check localeName.len == 2 or localeName.len == 3
+      # Should be lowercase
+      check localeName.toLowerAscii() == localeName
   
 
       
