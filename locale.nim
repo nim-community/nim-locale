@@ -99,9 +99,7 @@ else:
       discard parseutils.parseUntil(result, langCode, '_')
       if langCode.len() > 0:
         result = langCode
-      # Handle "C" or "POSIX" locales
-      elif result == "C" or result == "POSIX":
-        result = "Unknown"
+
     else:
       result = "Unknown"
 

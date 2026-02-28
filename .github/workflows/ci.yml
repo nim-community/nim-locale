@@ -33,13 +33,19 @@ jobs:
     - name: Install dependencies
       run: nimble install -y
 
-    - name: Set locale (Unix)
+    - name: Debug locale environment
       if: runner.os != 'Windows'
       run: |
-        export LANG=en_US.UTF-8
-        export LC_ALL=en_US.UTF-8
-        echo "LANG=$LANG" >> $GITHUB_ENV
-        echo "LC_ALL=$LC_ALL" >> $GITHUB_ENV
+        echo "=== Locale Environment ==="
+        echo "LANG: $LANG"
+        echo "LC_ALL: $LC_ALL"
+        echo "LC_CTYPE: $LC_CTYPE"
+        echo ""
+        echo "=== Available Locales ==="
+        locale -a | head -20 || echo "locale command not available"
+        echo ""
+        echo "=== Current Locale Settings ==="
+        locale || echo "locale command not available"
 
     - name: Build project
       run: nimble test
