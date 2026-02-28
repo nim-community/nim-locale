@@ -12,26 +12,33 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        nim-version: ['2.0.x', '2.2.x', 'stable']
+        version: ['2.0.x', '2.2.x', 'stable']
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    - name: Setup Nim
-      uses: jiro4989/setup-nim-action@v1
+    - name: Cache choosenim
+      id: cache-choosenim
+      uses: actions/cache@v4
       with:
-        nim-version: ${{ matrix.nim-version }}
+        path: ~/.choosenim
+        key: ${{ runner.os }}-choosenim-${{ matrix.version}}
 
-    - name: Cache Nimble packages
+    - name: Cache nimble
+      id: cache-nimble
       uses: actions/cache@v4
       with:
         path: ~/.nimble
-        key: ${{ runner.os }}-nimble-${{ hashFiles('*.nimble') }}
-        restore-keys: |
-          ${{ runner.os }}-nimble-
+        key: ${{ runner.os }}-nimble-${{ matrix.version}}-${{ hashFiles('*.nimble') }}
 
-    - name: Install dependencies
-      run: nimble install -y
+    - uses: alaviss/setup-nim@0.1.1
+      with:
+        path: 'nim'
+        version: ${{ matrix.version }}
 
-    - name: Build project
+    - name: Install Packages
+      run: nimble install -d -y
+
+    - name: test
       run: nimble test
