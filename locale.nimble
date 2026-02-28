@@ -9,4 +9,4 @@ skipFiles = @["locale.xml", "LocaleData.cfg"]
 
 #Dep
 
-requires "nimrod >= 0.9.4"
+requires "nim >= 1.6.0"
