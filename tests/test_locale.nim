@@ -10,11 +10,10 @@ suite "Locale Tests":
     
   test "GetLocaleName returns ISO 639-1 code format":
     let localeName = GetLocaleName()
-    if localeName != "Unknown":
-      # ISO 639-1 codes are typically 2 letters
-      check localeName.len == 2 or localeName.len == 3
-      # Should be lowercase
-      check localeName.toLowerAscii() == localeName
+    # ISO 639-1 codes are typically 2 letters
+    check localeName.len == 2 or localeName.len == 3
+    # Should be lowercase
+    check localeName.toLowerAscii() == localeName
   
 
       
