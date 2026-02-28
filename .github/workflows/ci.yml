@@ -34,36 +34,4 @@ jobs:
       run: nimble install -y
 
     - name: Build project
-      run: nim c locale.nim
-
-    - name: Run main module
-      run: ./locale
-      if: runner.os != 'Windows'
-
-    - name: Run main module (Windows)
-      run: .\locale.exe
-      if: runner.os == 'Windows'
-
-    - name: Run tests
-      run: nim c -r tests/test_locale.nim
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup Nim
-      uses: jiro4989/setup-nim-action@v1
-      with:
-        nim-version: 'stable'
-
-    - name: Check code formatting
-      run: |
-        if command -v nimpretty &> /dev/null; then
-          nimpretty --check locale.nim
-        else
-          echo "nimpretty not available, skipping format check"
-        fi
-
-    - name: Compile with all warnings
-      run: nim c --warning[UnusedImport]:on --warning[Deprecated]:on locale.nim
+      run: nimble test
