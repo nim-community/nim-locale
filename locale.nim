@@ -32,13 +32,23 @@ import strutils, xmlparser, tables, xmltree, os, parsecfg, streams
  
 # FUNCTIONS RELATED TO GETTING LOCALE NAME    
 when defined(windows):
-  from windows import GetUserDefaultLCID, GetLocaleInfoA, LCID, LOCALE_SISO639LANGNAME
+  type
+    LCID* = int32  # DWORD
+
+  const
+    LOCALE_SISO639LANGNAME* = 0x00000059'i32
+
+  proc GetUserDefaultLCID*(): LCID {.
+      stdcall, dynlib: "kernel32", importc: "GetUserDefaultLCID", sideEffect.}
+
+  proc GetLocaleInfoA*(Locale: LCID, LCType: int32, lpLCData: cstring, cchData: int32): int32 {.
+      stdcall, dynlib: "kernel32", importc: "GetLocaleInfoA", sideEffect.}
 
   proc GetWinLocaleName(): string =
     var locale = GetUserDefaultLCID()
-    var localeName :array[0..265, char]
-    var localeNameSize = GetLocaleInfoA(locale, LOCALE_SISO639LANGNAME, localeName, 256)
-    return $localeName
+    var localeName: array[0..255, char]
+    discard GetLocaleInfoA(locale, LOCALE_SISO639LANGNAME, cast[cstring](localeName[0].addr), 256)
+    return $cast[cstring](localeName[0].addr)
         
 
 elif defined(macosx):
